@@ -32,4 +32,15 @@ selection = selector.get_selection()
 
 ### connect functions
 
-Whenever the mouse is released, a function can be called
+Whenever the mouse is released, a function can be called by the selector object. For example, to report how many items are selected you could do something like this:
+
+```
+def my_function():
+    selection = selector.get_selection()
+    sys.stdout.write(f"\r{sum(selection)} items currently selected")
+    
+selector.on_release_func = my_function
+```
+In this example the same `on_release_func` technique is used to plot histograms of the selected data:
+
+![](callback.gif)
