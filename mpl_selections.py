@@ -20,14 +20,17 @@ class Selector(object):
         self.start = np.zeros(shape = 2)
         self.end = np.zeros(shape = 2)
         self.dragged = False
-        self.on_release_func = lambda: print("")
+        self.on_release_func = None
+        self.update_resolution = 20
+        self.moved = 0
     def connect(self):
         self.mouse_move = self.ax.figure.canvas.mpl_connect("motion_notify_event", self.mouse_move)
         self.mouse_press = self.ax.figure.canvas.mpl_connect("button_press_event", self.button_press)
         self.mouse_release = self.ax.figure.canvas.mpl_connect("button_release_event", self.button_release)
         
     def on_release(self):
-        self.on_release_func()
+        if self.on_release_func != None:
+            self.on_release_func()
         
     def mouse_move(self, event):
         if not event.inaxes:
@@ -35,8 +38,11 @@ class Selector(object):
         if event.button == 1:
             self.dragged = True
             self.end = np.array([event.xdata, event.ydata])
-            self.update_rect()
-        self.ax.figure.canvas.draw()
+            self.moved += 1
+            if self.moved % self.update_resolution == 0:
+                self.update_selection()
+            
+#        self.ax.figure.canvas.draw()
         
         
     def button_press(self, event):
@@ -53,9 +59,10 @@ class Selector(object):
         if self.dragged == True:
             self.dragged = False
             self.update_selection()
-        self.on_release()
+            self.on_release()
             
     def update_selection(self):
+        self.update_rect()
         data = self.scatter.get_offsets().data
         xmin = np.min([self.start[0], self.end[0]])
         xmax = np.max([self.start[0], self.end[0]])
