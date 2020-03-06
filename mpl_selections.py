@@ -11,7 +11,7 @@ import numpy as np
 
 
 class Selector(object):
-    def __init__(self, ax):
+    def __init__(self, ax, update_resolution = 20):
         self.ax  = ax
         self.scatter = self.ax.get_children()[0]
         self.connect()
@@ -21,7 +21,7 @@ class Selector(object):
         self.end = np.zeros(shape = 2)
         self.dragged = False
         self.on_release_func = None
-        self.update_resolution = 20
+        self.update_resolution = update_resolution
         self.moved = 0
     def connect(self):
         self.mouse_move = self.ax.figure.canvas.mpl_connect("motion_notify_event", self.mouse_move)
@@ -39,8 +39,9 @@ class Selector(object):
             self.dragged = True
             self.end = np.array([event.xdata, event.ydata])
             self.moved += 1
-            if self.moved % self.update_resolution == 0:
-                self.update_selection()
+            if self.moved > self.update_resolution:
+                self.update_rect()
+                self.moved = 0
             
 #        self.ax.figure.canvas.draw()
         
@@ -59,7 +60,7 @@ class Selector(object):
         if self.dragged == True:
             self.dragged = False
             self.update_selection()
-            self.on_release()
+        self.on_release()
             
     def update_selection(self):
         self.update_rect()
@@ -79,7 +80,6 @@ class Selector(object):
         self.rect.set_bounds(self.start[0],  self.start[1], self.end[0]-self.start[0], self.end[1]-self.start[1])
         self.ax.figure.canvas.draw()
         
-
     def get_selection(self):
         if hasattr(self, "selection"):
             return self.selection
